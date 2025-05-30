@@ -62,9 +62,36 @@ def initialize_display(display_type):
         raise ValueError(f"Unsupported display type: {display_type}")
 
     # Show the main group on the display
-    display.show(main_group)
+    # display.show(main_group) # show is called after all elements are added in the main script
 
-    return display, main_group
+    current_palette = None
+
+    if display_type == WAVESHARE_75_BW:
+        bw_palette = displayio.Palette(2)
+        bw_palette[0] = 0x000000  # Black
+        bw_palette[1] = 0xFFFFFF  # White
+        current_palette = bw_palette
+        # Ensure display is refreshed if show was called before palette fully set
+        # For B&W, often the bitmap itself dictates pixels, palette is for bitmap creation.
+        # If display.show was here, it might need display.refresh() if palette changes affect root group.
+
+    elif display_type == WAVESHARE_565_COLOR:
+        # Standard 7-color ePaper palette for Waveshare 5.65 inch display (600x448)
+        # Order: Black, White, Green, Blue, Red, Yellow, Orange
+        # Source: e.g. Adafruit_EPD library or Waveshare examples
+        color_palette = displayio.Palette(7)
+        color_palette[0] = 0x000000  # Black
+        color_palette[1] = 0xFFFFFF  # White
+        color_palette[2] = 0x00FF00  # Green
+        color_palette[3] = 0x0000FF  # Blue
+        color_palette[4] = 0xFF0000  # Red
+        color_palette[5] = 0xFFFF00  # Yellow
+        color_palette[6] = 0xFF8000  # Orange
+        current_palette = color_palette
+
+    display.show(main_group) # Show after palette might be configured for the display context if needed by driver
+
+    return display, main_group, current_palette
 
 # Example Usage (Optional - for testing on a non-CircuitPython environment, this would need mocks)
 if __name__ == '__main__':
