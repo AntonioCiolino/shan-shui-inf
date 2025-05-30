@@ -9,26 +9,23 @@ class PerlinNoise:
     PERLIN_ZWRAP = 1 << PERLIN_ZWRAPB
     PERLIN_SIZE = 4095
 
-    def __init__(self, prng_instance=None):
+    def __init__(self, seed=None): # Modified constructor
         self.perlin_octaves = 4
         self.perlin_amp_falloff = 0.5
-        self.perlin = None
-        # Use the provided Prng instance or create a new one
-        self.prng = prng_instance if prng_instance else Prng()
-        # Seed the Prng instance if it's newly created
-        if not prng_instance:
-            self.prng.seed()
 
+        self.prng = Prng()
+        self.prng.seed(seed) # Seed the internal Prng instance
+
+        # Initialize self.perlin array directly in constructor
+        self.perlin = [0.0] * (self.PERLIN_SIZE + 1)
+        for i in range(self.PERLIN_SIZE + 1):
+            self.perlin[i] = self.prng.next()
 
     def scaled_cosine(self, i):
         return 0.5 * (1.0 - math.cos(i * math.pi))
 
     def noise(self, x, y=0, z=0):
-        if self.perlin is None:
-            self.perlin = [0.0] * (self.PERLIN_SIZE + 1) # Initialize with floats
-            for i in range(self.PERLIN_SIZE + 1):
-                self.perlin[i] = self.prng.next() # Use Prng instance's next()
-
+        # self.perlin is now guaranteed to be initialized by the constructor
         if x < 0:
             x = -x
         if y < 0:
@@ -91,51 +88,20 @@ class PerlinNoise:
         if falloff > 0:
             self.perlin_amp_falloff = falloff
 
-    def noise_seed(self, seed_val):
-        # LCG class definition (as nested or helper class if preferred)
-        class LCG:
-            def __init__(self):
-                self.m = 4294967296
-                self.a = 1664525
-                self.c = 1013904223
-                self.seed_val = None
-                self.z = None
-
-            def set_seed(self, val):
-                # Use Prng's next() for default seed if val is None
-                self.z = self.seed_val = (val if val is not None else self.prng.next() * self.m) % self.m
-
-
-            def get_seed(self):
-                return self.seed_val
-
-            def rand(self):
-                self.z = (self.a * self.z + self.c) % self.m
-                return self.z / self.m
-
-        lcg = LCG()
-        lcg.prng = self.prng # Pass prng to LCG instance
-        lcg.set_seed(seed_val)
-        self.perlin = [0.0] * (self.PERLIN_SIZE + 1) # Initialize with floats
-        for i in range(self.PERLIN_SIZE + 1):
-            self.perlin[i] = lcg.rand()
+    # noise_seed method is removed. Seeding is handled at construction.
 
 # Example Usage (Optional)
 if __name__ == '__main__':
-    # Create a Prng instance
-    prng_for_perlin = Prng()
-    prng_for_perlin.seed(123)  # Seed it with a specific value
-
-    # Pass the Prng instance to PerlinNoise
-    noise_gen = PerlinNoise(prng_instance=prng_for_perlin)
+    # PerlinNoise is now seeded directly at construction
+    noise_gen_seeded = PerlinNoise(seed=123)
 
     # Test noise generation
-    print(noise_gen.noise(0.1, 0.2, 0.3))
+    print(noise_gen_seeded.noise(0.1, 0.2, 0.3))
 
     # Test noise detail
-    noise_gen.noise_detail(8, 0.65)
-    print(noise_gen.noise(0.1, 0.2, 0.3))
+    noise_gen_seeded.noise_detail(8, 0.65)
+    print(noise_gen_seeded.noise(0.1, 0.2, 0.3))
 
-    # Test noise seed
-    noise_gen.noise_seed(456)
-    print(noise_gen.noise(0.1, 0.2, 0.3))
+    # To re-seed, create a new instance
+    noise_gen_reseeded = PerlinNoise(seed=456)
+    print(noise_gen_reseeded.noise(0.1, 0.2, 0.3))

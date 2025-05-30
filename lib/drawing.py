@@ -292,12 +292,13 @@ from lib.poly_tools import PolyTools
 import lib.utils
 
 class Mount:
-    def __init__(self, noise_instance, utils_module, poly_tools_instance, tree_instance, arch_instance=None): # Added arch_instance
-        self.noise_instance = noise_instance
-        self.utils = utils_module
+    def __init__(self, poly_tools_instance, tree_instance, arch_instance, man_instance, noise_instance, utils_instance):
         self.poly_tools = poly_tools_instance
         self.tree_instance = tree_instance
-        self.arch_instance = arch_instance # Store arch_instance
+        self.arch_instance = arch_instance
+        self.man_instance = man_instance
+        self.noise_instance = noise_instance
+        self.utils_instance = utils_instance # Changed from utils_module for consistency
         # Mountain methods might create their own specifically seeded noise instances.
 
     def _draw_mountain_foot(self, bitmap, ptlist_local, x_offset, y_offset, args):
@@ -384,9 +385,9 @@ class Mount:
                 'tex': 20 # Fewer textures for smaller rocks
             }
             # Position rocks within the flat area, then transform to global
-            rock_x_local = self.utils.norm_rand(grbd_local['xmin'], grbd_local['xmax'])
+            rock_x_local = self.utils_instance.norm_rand(grbd_local['xmin'], grbd_local['xmax']) # Use utils_instance
             # Y for rocks on flat top: use average of ymin/ymax + some offset, then global transform
-            rock_y_local = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + self.utils.norm_rand(-10, 10) + 10
+            rock_y_local = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + self.utils_instance.norm_rand(-10, 10) + 10 # Use utils_instance
 
             self.draw_rock(bitmap,
                            x_mountain_base + rock_x_local,
@@ -395,11 +396,11 @@ class Mount:
 
         # Draw clusters of trees (e.g., tree08)
         for _ in range(random.choice([0,0,1,2])): # Number of tree clusters
-            cluster_center_x_local = self.utils.norm_rand(grbd_local['xmin'], grbd_local['xmax'])
-            cluster_center_y_local = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + self.utils.norm_rand(-5,5) + 20
+            cluster_center_x_local = self.utils_instance.norm_rand(grbd_local['xmin'], grbd_local['xmax']) # Use utils_instance
+            cluster_center_y_local = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + self.utils_instance.norm_rand(-5,5) + 20 # Use utils_instance
 
             for _ in range(int(2 + random.random() * 3)): # Number of trees per cluster
-                tree_x_local = cluster_center_x_local + self.utils.norm_rand(-30,30)
+                tree_x_local = cluster_center_x_local + self.utils_instance.norm_rand(-30,30) # Use utils_instance
                 # Ensure tree is within the flat area's x-bounds
                 tree_x_local = max(grbd_local['xmin'], min(grbd_local['xmax'], tree_x_local))
 
@@ -420,8 +421,8 @@ class Mount:
                 rock_args_large = {
                     'wid': 50 + random.random() * 20, 'hei': 40 + random.random() * 20, 'sha': 5, 'tex': 30
                 }
-                rock_x_l = self.utils.norm_rand(grbd_local['xmin'], grbd_local['xmax'])
-                rock_y_l = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + self.utils.norm_rand(-5,5) + 20
+                rock_x_l = self.utils_instance.norm_rand(grbd_local['xmin'], grbd_local['xmax']) # Use utils_instance
+                rock_y_l = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + self.utils_instance.norm_rand(-5,5) + 20 # Use utils_instance
                 self.draw_rock(bitmap, x_mountain_base + rock_x_l, y_mountain_base + rock_y_l, random.random()*100, rock_args_large)
 
         elif tt == 1: # Grove of tree05
@@ -433,33 +434,33 @@ class Mount:
             for x_tree_local in range(int(xmin_grove), int(xmax_grove), 30):
                 tree05_args = {'hei': 100 + random.random() * 200, 'col': MOUNTAIN_OUTLINE_COLOR_INDEX}
                 self.tree_instance.tree05(bitmap,
-                                           x_mountain_base + x_tree_local + self.utils.norm_rand(-20,20),
+                                           x_mountain_base + x_tree_local + self.utils_instance.norm_rand(-20,20), # Use utils_instance
                                            y_mountain_base + (grbd_local['ymin'] + grbd_local['ymax']) / 2 + 20,
                                            tree05_args)
             # Add some rocks around the grove
             for _ in range(int(random.random()*4)):
                 rock_args_grove = {'wid': 50 + random.random()*20, 'hei': 40 + random.random()*20, 'sha':5, 'tex':30}
-                rock_x_g = self.utils.norm_rand(grbd_local['xmin'], grbd_local['xmax'])
-                rock_y_g = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + self.utils.norm_rand(-5,5) + 20
+                rock_x_g = self.utils_instance.norm_rand(grbd_local['xmin'], grbd_local['xmax']) # Use utils_instance
+                rock_y_g = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + self.utils_instance.norm_rand(-5,5) + 20 # Use utils_instance
                 self.draw_rock(bitmap, x_mountain_base + rock_x_g, y_mountain_base + rock_y_g, random.random()*100, rock_args_grove)
 
 
         elif tt == 2: # tree04 with rocks
             for _ in range(random.choice([1,1,1,1,2,2,3])):
-                xr_local = self.utils.norm_rand(grbd_local['xmin'], grbd_local['xmax'])
+                xr_local = self.utils_instance.norm_rand(grbd_local['xmin'], grbd_local['xmax']) # Use utils_instance
                 yr_local = (grbd_local['ymin'] + grbd_local['ymax']) / 2
                 tree04_args = {'col': MOUNTAIN_OUTLINE_COLOR_INDEX, 'hei': 150 + random.random()*50} # Example hei
                 self.tree_instance.tree04(bitmap, x_mountain_base + xr_local, y_mountain_base + yr_local + 20, tree04_args)
                 for _ in range(int(random.random()*2)):
                     rock_args_t04 = {'wid':50+random.random()*20, 'hei':40+random.random()*20, 'sha':5, 'tex':30}
-                    rock_x_t04 = max(grbd_local['xmin'], min(grbd_local['xmax'], xr_local + self.utils.norm_rand(-50,50)))
-                    self.draw_rock(bitmap, x_mountain_base+rock_x_t04, y_mountain_base+yr_local+self.utils.norm_rand(-5,5)+20, random.random()*100, rock_args_t04)
+                    rock_x_t04 = max(grbd_local['xmin'], min(grbd_local['xmax'], xr_local + self.utils_instance.norm_rand(-50,50))) # Use utils_instance
+                    self.draw_rock(bitmap, x_mountain_base+rock_x_t04, y_mountain_base+yr_local+self.utils_instance.norm_rand(-5,5)+20, random.random()*100, rock_args_t04) # Use utils_instance
 
         elif tt == 3: # tree06
             for _ in range(random.choice([1,1,1,1,2,2,3])):
                 tree06_args = {'hei': 60 + random.random()*60, 'col': MOUNTAIN_OUTLINE_COLOR_INDEX}
                 self.tree_instance.tree06(bitmap,
-                                           x_mountain_base + self.utils.norm_rand(grbd_local['xmin'], grbd_local['xmax']),
+                                           x_mountain_base + self.utils_instance.norm_rand(grbd_local['xmin'], grbd_local['xmax']), # Use utils_instance
                                            y_mountain_base + (grbd_local['ymin'] + grbd_local['ymax']) / 2,
                                            tree06_args)
         elif tt == 4: # tree07 grove
@@ -468,30 +469,30 @@ class Mount:
             xmin_grove_t07 = grbd_local['xmin'] * (1-pmin_factor) + grbd_local['xmax'] * pmin_factor
             xmax_grove_t07 = grbd_local['xmin'] * (1-pmax_factor) + grbd_local['xmax'] * pmax_factor
             for x_tree_local_t07 in range(int(xmin_grove_t07), int(xmax_grove_t07), 20):
-                tree07_args = {'hei': self.utils.norm_rand(40,80), 'col': MOUNTAIN_OUTLINE_COLOR_INDEX}
+                tree07_args = {'hei': self.utils_instance.norm_rand(40,80), 'col': MOUNTAIN_OUTLINE_COLOR_INDEX} # Use utils_instance
                 self.tree_instance.tree07(bitmap,
-                                           x_mountain_base + x_tree_local_t07 + self.utils.norm_rand(-20,20),
-                                           y_mountain_base + (grbd_local['ymin'] + grbd_local['ymax'])/2 + self.utils.norm_rand(-1,1),
+                                           x_mountain_base + x_tree_local_t07 + self.utils_instance.norm_rand(-20,20), # Use utils_instance
+                                           y_mountain_base + (grbd_local['ymin'] + grbd_local['ymax'])/2 + self.utils_instance.norm_rand(-1,1), # Use utils_instance
                                            tree07_args)
 
         # General small shrubs (tree02)
         for _ in range(int(50 * random.random())):
             tree02_args = {'col': MOUNTAIN_OUTLINE_COLOR_INDEX} # Default size for tree02
             self.tree_instance.tree02(bitmap,
-                                       x_mountain_base + self.utils.norm_rand(grbd_local['xmin'], grbd_local['xmax']),
-                                       y_mountain_base + self.utils.norm_rand(grbd_local['ymin'], grbd_local['ymax']),
+                                       x_mountain_base + self.utils_instance.norm_rand(grbd_local['xmin'], grbd_local['xmax']), # Use utils_instance
+                                       y_mountain_base + self.utils_instance.norm_rand(grbd_local['ymin'], grbd_local['ymax']), # Use utils_instance
                                        tree02_args)
 
         # Call Arch.arch01 if instance is available
         if hasattr(self, 'arch_instance') and self.arch_instance:
             ts = random.choice([0,0,0,0,1])
             if ts == 1 and tt != 4: # Condition from JS
-                arch_x_local = self.utils.norm_rand(grbd_local['xmin'], grbd_local['xmax'])
+                arch_x_local = self.utils_instance.norm_rand(grbd_local['xmin'], grbd_local['xmax']) # Use utils_instance
                 arch_y_local = (grbd_local['ymin'] + grbd_local['ymax']) / 2 + 20
 
                 arch01_args = {
-                    'wid': self.utils.norm_rand(160, 200),
-                    'hei': self.utils.norm_rand(80, 100),
+                    'wid': self.utils_instance.norm_rand(160, 200), # Use utils_instance
+                    'hei': self.utils_instance.norm_rand(80, 100), # Use utils_instance
                     'per': random.random(), # Perspective factor
                     'rot': random.random()*0.4+0.3, # Rotation factor for internal box
                     'col': BOX_STROKE_COLOR_INDEX # Base color for the structure
@@ -530,8 +531,8 @@ class Mount:
                 # Use noise_gen which is seeded specifically for this rock
                 nslist_layer.append(noise_gen.noise(i_layer, j_point_idx * 0.2))
 
-            # loop_noise needs to be available, ensure it's imported or part of self.utils
-            self.utils.loop_noise(nslist_layer) # Modifies nslist_layer in-place
+                    # loop_noise needs to be available, ensure it's imported or part of self.utils_instance
+                    self.utils_instance.loop_noise(nslist_layer) # Modifies nslist_layer in-place # Use utils_instance
 
             for j_point_idx in range(reso_x):
                 angle_rad = (j_point_idx / reso_x) * math.pi * 2 - math.pi / 2 # From -PI/2 to 3PI/2
@@ -594,12 +595,12 @@ class Mount:
         texture_args_rock = {
             'xof': x_offset, 'yof': y_offset,
             'tex': tex_density, 'wid': 3, 'sha': shade_amount,
-            'col': lambda p_ratio: int(180 + p_ratio * 0), # Fixed dark grey (assuming 180 is a valid index or maps to one)
-                                                          # JS: "rgba(180,180,180,"+(0.3+Math.random()*0.3).toFixed(3)+")"
-                                                          # This needs palette mapping. For now, using a placeholder logic.
-                                                          # Let's assume FOOT_STROKE_COLOR_INDEX can be used.
-                                                          # col_func = lambda p: FOOT_STROKE_COLOR_INDEX,
-            'dis': lambda: (0.15 + 0.15 * random.random()) if random.random() > 0.5 else (0.85 - 0.15 * random.random())
+            'col': lambda p_ratio: int(180 + p_ratio * 0),
+            # JS: "rgba(180,180,180,"+(0.3+Math.random()*0.3).toFixed(3)+")"
+            # This needs palette mapping. For now, using a placeholder logic.
+            # Let's assume FOOT_STROKE_COLOR_INDEX can be used.
+            # col_func = lambda p: FOOT_STROKE_COLOR_INDEX,
+            'dis': lambda: (0.15 + 0.15 * random.random()) if random.random() > 0.5 else (0.85 - 0.15 * random.random()) # Uses global random
         }
         # Ensure the color function returns a valid index for the bitmap palette
         def rock_texture_color_func(p_ratio):
@@ -791,13 +792,12 @@ class Mount:
         # TODO: Call Mount.rock (bott rock) - this would be self.draw_rock(...)
 
 class Arch:
-    def __init__(self, noise_instance, utils_module, poly_tools_instance, tree_instance=None, mount_instance=None):
+    def __init__(self, poly_tools_instance, tree_instance, man_instance, noise_instance, utils_instance): # Updated constructor
         self.noise_instance = noise_instance
-        self.utils = utils_module
+        self.utils_instance = utils_instance # Changed from utils_module
         self.poly_tools = poly_tools_instance
         self.tree_instance = tree_instance
-        self.mount_instance = mount_instance
-        self.man_instance = man_instance # Added man_instance
+        self.man_instance = man_instance
 
     def _generate_decoration_lines_local(self, style, args_deco):
         """
@@ -817,10 +817,10 @@ class Arch:
 
         # Ensure div can handle cases where segment count might be zero or one.
         # self.utils.div should ideally return the start point or [start, end] if segments is < 1.
-        dl = self.utils.div([pul, pdl], vsp_params[1])
-        dr = self.utils.div([pur, pdr], vsp_params[1])
-        du = self.utils.div([pul, pur], hsp_params[1])
-        dd = self.utils.div([pdl, pdr], hsp_params[1])
+        dl = self.utils_instance.div([pul, pdl], vsp_params[1]) # Use utils_instance
+        dr = self.utils_instance.div([pur, pdr], vsp_params[1]) # Use utils_instance
+        du = self.utils_instance.div([pul, pur], hsp_params[1]) # Use utils_instance
+        dd = self.utils_instance.div([pdl, pdr], hsp_params[1]) # Use utils_instance
 
         if not all([dl, dr, du, dd]): return [] # Need all edge divisions
 
@@ -832,23 +832,23 @@ class Arch:
             mlu, mru = du[hsp_params[0]], du[len(du) - 1 - hsp_params[0]]
             mld, mrd = dd[hsp_params[0]], dd[len(dd) - 1 - hsp_params[0]]
 
-            polylines_local.append(self.utils.div([mlu, mld], 5))
-            polylines_local.append(self.utils.div([mru, mrd], 5))
+            polylines_local.append(self.utils_instance.div([mlu, mld], 5)) # Use utils_instance
+            polylines_local.append(self.utils_instance.div([mru, mrd], 5)) # Use utils_instance
 
-            inner_left_pts = self.utils.div([mlu,mld],vsp_params[1])
-            inner_right_pts = self.utils.div([mru,mrd],vsp_params[1])
+            inner_left_pts = self.utils_instance.div([mlu,mld],vsp_params[1]) # Use utils_instance
+            inner_right_pts = self.utils_instance.div([mru,mrd],vsp_params[1]) # Use utils_instance
 
             for i in range(vsp_params[0], len(dl) - vsp_params[0], vsp_params[0]):
                 if i < len(inner_left_pts) and i < len(dl):
-                     polylines_local.append(self.utils.div([inner_left_pts[i], dl[i]], 2)) # Simple line
+                     polylines_local.append(self.utils_instance.div([inner_left_pts[i], dl[i]], 2)) # Simple line # Use utils_instance
                 if i < len(inner_right_pts) and i < len(dr):
-                     polylines_local.append(self.utils.div([inner_right_pts[i], dr[i]], 2))
+                     polylines_local.append(self.utils_instance.div([inner_right_pts[i], dr[i]], 2)) # Use utils_instance
 
 
         elif style == 2: # |||| style (vertical lines)
             for i in range(hsp_params[0], len(du) - hsp_params[0], hsp_params[0]):
                 if i < len(du) and i < len(dd):
-                    polylines_local.append(self.utils.div([du[i], dd[i]], 2))
+                    polylines_local.append(self.utils_instance.div([du[i], dd[i]], 2)) # Use utils_instance
 
         elif style == 3: # |##| style (grid-like, simplified from previous attempt)
             if not (hsp_params[0] < len(du) and hsp_params[0] < len(dd) and \
@@ -857,19 +857,19 @@ class Arch:
             mlu, mru = du[hsp_params[0]], du[len(du) - 1 - hsp_params[0]]
             mld, mrd = dd[hsp_params[0]], dd[len(dd) - 1 - hsp_params[0]]
 
-            polylines_local.append(self.utils.div([mlu, mld], 5)) # Left inner vertical
-            polylines_local.append(self.utils.div([mru, mrd], 5)) # Right inner vertical
+            polylines_local.append(self.utils_instance.div([mlu, mld], 5)) # Left inner vertical # Use utils_instance
+            polylines_local.append(self.utils_instance.div([mru, mrd], 5)) # Right inner vertical # Use utils_instance
 
             num_horizontal_bars = vsp_params[0]
             for i_bar in range(1, num_horizontal_bars + 1):
                 p_factor = i_bar / (num_horizontal_bars + 1.0)
                 pt_on_left_v = (mlu[0]*(1-p_factor) + mld[0]*p_factor, mlu[1]*(1-p_factor) + mld[1]*p_factor)
                 pt_on_right_v = (mru[0]*(1-p_factor) + mrd[0]*p_factor, mru[1]*(1-p_factor) + mrd[1]*p_factor)
-                polylines_local.append(self.utils.div([pt_on_left_v, pt_on_right_v], 2))
+                polylines_local.append(self.utils_instance.div([pt_on_left_v, pt_on_right_v], 2)) # Use utils_instance
 
         return polylines_local
 
-    def draw_arch01(self, bitmap, x_offset, y_offset, seed, args_arch01):
+    def draw_arch01(self, bitmap, x_offset, y_offset, seed, args_arch01, palette_type=None, current_palette=None):
         """Draws architecture type 01."""
         hei = args_arch01.get('hei', 70)
         wid = args_arch01.get('wid', 180)
@@ -928,19 +928,34 @@ class Arch:
 
         # Men
         mcnt = random.choice([0, 1, 1, 2])
-        if hasattr(self, 'man_instance') and self.man_instance:
+        if hasattr(self, 'man_instance') and self.man_instance and palette_type is not None and current_palette is not None:
+            # Default args for man in arch01
+            man_default_args = {
+                'sca': 0.42,
+                'body_col': args_arch01.get('man_body_col', "grey"), # Allow override from arch01 args
+                'head_col': args_arch01.get('man_head_col', "skin"),
+                'limbs_col': args_arch01.get('man_limbs_col', "grey"),
+                'stroke_col': args_arch01.get('man_stroke_col', "black"),
+                'hat': self.man_instance.draw_hat01, # Man in arch01 wears hat01 by default
+                'args_hat': args_arch01.get('man_args_hat', {'body_col': "dark_red", 'feather_col': "white"}), # hat specific colors
+                'ite': None # No item by default for man in arch01
+            }
             if mcnt == 1:
-                man_args = {'fli': random.choice([True, False]), 'sca': 0.42, 'col': MAN_COLOR_INDEX}
-                self.man_instance.draw_man(bitmap, x_offset + self.utils.norm_rand(-wid/3, wid/3), y_offset, man_args)
+                man_args_final = man_default_args.copy()
+                man_args_final['fli'] = random.choice([True, False])
+                self.man_instance.draw_man(bitmap, x_offset + self.utils_instance.norm_rand(-wid/3, wid/3), y_offset, man_args_final, palette_type, current_palette) # Use utils_instance
             elif mcnt == 2:
-                man_args1 = {'fli': False, 'sca': 0.42, 'col': MAN_COLOR_INDEX}
-                self.man_instance.draw_man(bitmap, x_offset + self.utils.norm_rand(-wid/4, -wid/5), y_offset, man_args1)
-                man_args2 = {'fli': True, 'sca': 0.42, 'col': MAN_COLOR_INDEX}
-                self.man_instance.draw_man(bitmap, x_offset + self.utils.norm_rand(wid/5, wid/4), y_offset, man_args2)
-        # else:
-            # print("Man instance not available in Arch for draw_arch01")
+                man_args1 = man_default_args.copy()
+                man_args1['fli'] = False
+                self.man_instance.draw_man(bitmap, x_offset + self.utils_instance.norm_rand(-wid/4, -wid/5), y_offset, man_args1, palette_type, current_palette) # Use utils_instance
 
-    def draw_arch02(self, bitmap, x_offset, y_offset, seed, args_arch02):
+                man_args2 = man_default_args.copy()
+                man_args2['fli'] = True
+                self.man_instance.draw_man(bitmap, x_offset + self.utils_instance.norm_rand(wid/5, wid/4), y_offset, man_args2, palette_type, current_palette) # Use utils_instance
+        # else:
+            # print("Man instance not available or palette info missing in Arch for draw_arch01")
+
+    def draw_arch02(self, bitmap, x_offset, y_offset, seed, args_arch02, palette_type=None, current_palette=None):
         """Draws architecture type 02 (multi-story with roof)."""
         hei_story = args_arch02.get('hei', 10) # Height per story
         wid_base = args_arch02.get('wid', 50)
@@ -994,7 +1009,7 @@ class Arch:
 
             hoff += current_hei * 1.5 # Move up for the next story
 
-    def draw_arch03(self, bitmap, x_offset, y_offset, seed, args_arch03):
+    def draw_arch03(self, bitmap, x_offset, y_offset, seed, args_arch03, palette_type=None, current_palette=None):
         """Draws architecture type 03 (multi-story pagoda-style)."""
         hei_story = args_arch03.get('hei', 10)
         wid_base = args_arch03.get('wid', 50)
@@ -1033,7 +1048,7 @@ class Arch:
 
             hoff += current_hei * 1.5
 
-    def draw_arch04(self, bitmap, x_offset, y_offset, seed, args_arch04):
+    def draw_arch04(self, bitmap, x_offset, y_offset, seed, args_arch04, palette_type=None, current_palette=None):
         """Draws architecture type 04 (similar to arch03 but transparent boxes)."""
         hei_story = args_arch04.get('hei', 15)
         wid_base = args_arch04.get('wid', 30)
@@ -1072,7 +1087,7 @@ class Arch:
 
             hoff += current_hei * 1.2 # Slightly less vertical spacing than arch03
 
-    def draw_boat01(self, bitmap, x_offset, y_offset, seed, args_boat):
+    def draw_boat01(self, bitmap, x_offset, y_offset, seed, args_boat, palette_type=None, current_palette=None): # Added palette params
         """Draws a simple boat with a man."""
         boat_len = args_boat.get('len', 120)
         sca = args_boat.get('sca', 1.0)
@@ -1082,22 +1097,24 @@ class Arch:
         direction = -1 if is_flipped else 1
 
         # Draw the man on the boat
-        if hasattr(self, 'man_instance') and self.man_instance:
-            # Man args from JS: ite: Man.stick01, hat: Man.hat02, sca: 0.5*sca, fli: !fli
-            # The 'ite' and 'hat' are specific functions/styles for the man.
-            # Our placeholder Man.draw_man doesn't support these directly yet.
-            # We pass scale and flip. Color is MAN_COLOR_INDEX.
-            man_args = {
+        if hasattr(self, 'man_instance') and self.man_instance and palette_type is not None and current_palette is not None:
+            man_default_args = {
                 'sca': 0.5 * sca,
-                'fli': not is_flipped, # Man faces opposite to boat's flip state
-                'col': MAN_COLOR_INDEX
-                # TODO: Add 'ite' and 'hat' to args_man if Man class gets updated
+                'fli': not is_flipped,
+                'body_col': args_boat.get('man_body_col', "brown"),
+                'head_col': args_boat.get('man_head_col', "skin"),
+                'limbs_col': args_boat.get('man_limbs_col', "brown"),
+                'stroke_col': args_boat.get('man_stroke_col', "dark_brown"),
+                'hat': self.man_instance.draw_hat02,
+                'args_hat': args_boat.get('man_args_hat', {'col': "straw"}), # Example color for hat02
+                'ite': self.man_instance.draw_stick01,
+                'args_item': args_boat.get('man_args_item', {'col':"dark_brown", 'wid': sca * 2})
             }
             # Man is positioned relative to the boat's x_offset
             self.man_instance.draw_man(bitmap,
                                        x_offset + 20 * sca * direction,
                                        y_offset, # Man stands at the boat's y_offset level
-                                       man_args)
+                                       man_default_args, palette_type, current_palette)
 
         plist1_local, plist2_local = [], []
 
@@ -1136,7 +1153,7 @@ class Arch:
             }
             draw_stroke(bitmap, plist_combined_global, stroke_args_boat)
 
-    def draw_transmission_tower01(self, bitmap, x_offset, y_offset, seed, args_tower):
+    def draw_transmission_tower01(self, bitmap, x_offset, y_offset, seed, args_tower, palette_type=None, current_palette=None):
         """Draws a transmission tower."""
         hei = args_tower.get('hei', 100)
         wid = args_tower.get('wid', 20)
@@ -1156,8 +1173,8 @@ class Arch:
 
             global_polyline_pts = [(p[0] + x_offset, p[1] + y_offset) for p in local_polyline_pts]
             stroke_args = {
-                'wid': 1, 'fun': lambda x_prog: 0.5, # Constant, half-unit width
-                'col': base_col_idx, 'noi': 0.05 # Minimal noise
+                'wid': 1, 'fun': lambda x_prog: 0.5,
+                'col': base_col_idx, 'noi': 0.05
             }
             draw_stroke(bitmap, global_polyline_pts, stroke_args)
 
@@ -1191,12 +1208,9 @@ class Arch:
         # Main tower body lattice
         # Using self.utils.div to create smoother interpolated lines for legs
         # The JS uses div([p00,p10,p20,p30],5) which means 5 segments for the whole leg.
-        # Our div takes point list and number of segments.
-        # If div is for a single segment, we need to div each pair.
-        # Assuming div here is to make a polyline from a list of points, with 5 segments for the whole.
 
-        leg_left_pts = self.utils.div([p00,p10,p20,p30], 5 * 3) # 5 segments between each pair
-        leg_right_pts = self.utils.div([p01,p11,p21,p31], 5 * 3)
+        leg_left_pts = self.utils_instance.div([p00,p10,p20,p30], 5 * 3) # Use utils_instance; 5 segments between each pair
+        leg_right_pts = self.utils_instance.div([p01,p11,p21,p31], 5 * 3) # Use utils_instance
 
         if leg_left_pts and leg_right_pts and len(leg_left_pts) > 1 and len(leg_right_pts) > 1:
             min_len = min(len(leg_left_pts), len(leg_right_pts))
@@ -1216,7 +1230,7 @@ class Arch:
         quickstroke_local(leg_right_pts)
 
 
-    def draw_hut(self, bitmap, x_offset, y_offset, args_hut):
+    def draw_hut(self, bitmap, x_offset, y_offset, args_hut, palette_type=None, current_palette=None):
         """Draws a hut structure."""
         hei = args_hut.get('hei', 40)
         wid = args_hut.get('wid', 180)
@@ -1275,12 +1289,12 @@ class Arch:
             'tex': tex_density,
             'wid': 1, 'len': 0.25, 'sha': 0, # No shading for hut texture per JS
             'col': hut_texture_col_func,
-            'dis': lambda: self.utils.wtrand(lambda a: a*a), # Weighted random distribution
+            'dis': lambda: self.utils_instance.wtrand(lambda a: a*a), # Weighted random distribution # Use utils_instance
             'noi': lambda lyr_p1: 5 # Noise function for texture
         }
         draw_texture(bitmap, ptlist_layers_local, texture_args_hut)
 
-    def draw_box(self, bitmap, x_offset, y_offset, args_box):
+    def draw_box(self, bitmap, x_offset, y_offset, args_box, palette_type=None, current_palette=None):
         """Draws a box structure, potentially with decorations."""
         hei = args_box.get('hei', 20)
         wid = args_box.get('wid', 120)
@@ -1394,7 +1408,7 @@ class Arch:
             }
             draw_stroke(bitmap, line_pts_global, stroke_args)
 
-    def draw_rail(self, bitmap, x_offset, y_offset, seed, args_rail):
+    def draw_rail(self, bitmap, x_offset, y_offset, seed, args_rail, palette_type=None, current_palette=None):
         """Draws a rail structure."""
         hei = args_rail.get('hei', 20)
         wid = args_rail.get('wid', 180)
@@ -1419,16 +1433,16 @@ class Arch:
         # Define horizontal rails (local coordinates)
         # Front rails
         if fro:
-            ptlist_horizontal_rails_local.append(self.utils.div([(-wid * 0.5, 0), (mid, per)], seg_count))
-            ptlist_horizontal_rails_local.append(self.utils.div([(mid, per), (wid * 0.5, 0)], seg_count))
-            ptlist_horizontal_rails_local.append(self.utils.div([(-wid * 0.5, -hei), (mid, -hei + per)], seg_count))
-            ptlist_horizontal_rails_local.append(self.utils.div([(mid, -hei + per), (wid * 0.5, -hei)], seg_count))
+            ptlist_horizontal_rails_local.append(self.utils_instance.div([(-wid * 0.5, 0), (mid, per)], seg_count)) # Use utils_instance
+            ptlist_horizontal_rails_local.append(self.utils_instance.div([(mid, per), (wid * 0.5, 0)], seg_count)) # Use utils_instance
+            ptlist_horizontal_rails_local.append(self.utils_instance.div([(-wid * 0.5, -hei), (mid, -hei + per)], seg_count)) # Use utils_instance
+            ptlist_horizontal_rails_local.append(self.utils_instance.div([(mid, -hei + per), (wid * 0.5, -hei)], seg_count)) # Use utils_instance
         # Back rails (if transparent)
         if tra:
-            ptlist_horizontal_rails_local.append(self.utils.div([(-wid * 0.5, 0), (bmid, -per)], seg_count))
-            ptlist_horizontal_rails_local.append(self.utils.div([(bmid, -per), (wid * 0.5, 0)], seg_count))
-            ptlist_horizontal_rails_local.append(self.utils.div([(-wid * 0.5, -hei), (bmid, -hei - per)], seg_count))
-            ptlist_horizontal_rails_local.append(self.utils.div([(bmid, -hei - per), (wid * 0.5, -hei)], seg_count))
+            ptlist_horizontal_rails_local.append(self.utils_instance.div([(-wid * 0.5, 0), (bmid, -per)], seg_count)) # Use utils_instance
+            ptlist_horizontal_rails_local.append(self.utils_instance.div([(bmid, -per), (wid * 0.5, 0)], seg_count)) # Use utils_instance
+            ptlist_horizontal_rails_local.append(self.utils_instance.div([(-wid * 0.5, -hei), (bmid, -hei - per)], seg_count)) # Use utils_instance
+            ptlist_horizontal_rails_local.append(self.utils_instance.div([(bmid, -hei - per), (wid * 0.5, -hei)], seg_count)) # Use utils_instance
 
         # Randomly open one segment in the back rails if transparent
         if tra and ptlist_horizontal_rails_local:
@@ -1510,7 +1524,7 @@ class Arch:
                 }
                 draw_stroke(bitmap, polyline_global, stroke_args)
 
-    def draw_roof(self, bitmap, x_offset, y_offset, args_roof):
+    def draw_roof(self, bitmap, x_offset, y_offset, args_roof, palette_type=None, current_palette=None):
         """Draws a standard roof structure."""
         hei = args_roof.get('hei', 20)
         wid = args_roof.get('wid', 120)
@@ -1550,13 +1564,13 @@ class Arch:
 
         # Curved edges of the roof
         ptlist_roof_lines_local_unflipped.append( # Top-left slanted edge
-            self.utils.div(opf([[-wid*0.5+quat, -hei-per/2], [-wid*0.5+quat*0.5, -hei/2-per/4], [-wid*0.5-cor, 0]]), 5)
+            self.utils_instance.div(opf([[-wid*0.5+quat, -hei-per/2], [-wid*0.5+quat*0.5, -hei/2-per/4], [-wid*0.5-cor, 0]]), 5) # Use utils_instance
         )
         ptlist_roof_lines_local_unflipped.append( # Top-right slanted edge
-             self.utils.div(opf([[mid+quat, -hei], [(mid+quat+wid*0.5)/2, -hei/2], [wid*0.5+cor, 0]]), 5)
+             self.utils_instance.div(opf([[mid+quat, -hei], [(mid+quat+wid*0.5)/2, -hei/2], [wid*0.5+cor, 0]]), 5) # Use utils_instance
         )
         ptlist_roof_lines_local_unflipped.append( # Ridge-to-corner slanted edge (front)
-             self.utils.div(opf([[mid+quat, -hei], [mid+quat/2, -hei/2+per/2], [mid+cor, per]]), 5)
+             self.utils_instance.div(opf([[mid+quat, -hei], [mid+quat/2, -hei/2+per/2], [mid+cor, per]]), 5) # Use utils_instance
         )
 
         # Straight edges of the roof
@@ -1595,7 +1609,7 @@ class Arch:
             # print(f"Plaque: {plaque_params[1]} at roof on {x_offset},{y_offset}")
             pass
 
-    def draw_pagoda_roof(self, bitmap, x_offset, y_offset, args_pagoda_roof):
+    def draw_pagoda_roof(self, bitmap, x_offset, y_offset, args_pagoda_roof, palette_type=None, current_palette=None):
         """Draws a pagoda-style roof."""
         hei = args_pagoda_roof.get('hei', 20)
         wid = args_pagoda_roof.get('wid', 120)
@@ -1629,18 +1643,16 @@ class Arch:
             # If i > 0, it also draws a line from the previous fxx,fy to current fxx,fy (the bottom edge of the tier)
             if i > 0 and ptlist_roof_lines_local:
                 # Get the last point of the previously added line segment (which is the previous fxx, fy)
-                # This assumes ptlist_roof_lines_local stores polylines, and the last point of the last polyline is the previous (fxx, fy)
                 prev_fxx_fy = ptlist_roof_lines_local[-1][-1]
-                ptlist_roof_lines_local.append(self.utils.div([prev_fxx_fy, (fxx, fy)], 2)) # Straight line for bottom edge of tier
+                ptlist_roof_lines_local.append(self.utils_instance.div([prev_fxx_fy, (fxx, fy)], 2)) # Straight line # Use utils_instance
 
             # Define the curved segment of the roof tier
-            # Points are local to the roof's own coordinate system (peak at 0, -hei)
             curve_points = [
                 (0, -hei),
                 (fx * 0.5, (-hei + fy) * 0.5),
                 (fxx, fy)
             ]
-            ptlist_roof_lines_local.append(self.utils.div(curve_points, 5)) # 5 segments for the curve
+            ptlist_roof_lines_local.append(self.utils_instance.div(curve_points, 5)) # 5 segments for the curve # Use utils_instance
 
             polist_bg_local.append((fxx, fy)) # Add outer point to background polygon
 
@@ -1658,52 +1670,551 @@ class Arch:
             }
             draw_stroke(bitmap, line_global, stroke_args_pagoda)
 
-# Placeholder Man Class
-class Man:
-    def __init__(self):
-        pass
-
-    def draw_man(self, bitmap, x_offset, y_offset, args_man):
-        # Placeholder: Draw a simple shape or log a message
-        # print(f"Placeholder: Man.draw_man called at ({x_offset}, {y_offset})")
-        # Example: draw a small rectangle (10px high, 4px wide)
-        # Ensure color index is valid for the bitmap's palette
-        man_color = args_man.get('col', MAN_COLOR_INDEX)
-
-        # Simple stick figure: body and head
-        # Body
-        body_start = (x_offset, y_offset)
-        body_end = (x_offset, y_offset - 8) # 8px tall body
-        draw_line(bitmap, body_start[0], body_start[1], body_end[0], body_end[1], man_color)
-        # Head (simple circle - draw_polygon can approximate with enough points, or use a small square)
-        head_center_x = x_offset
-        head_center_y = y_offset - 10 # 2px radius head on top of body
-        head_radius = 2
-        # Approximate circle with a small square for simplicity with draw_polygon
-        head_pts = [
-            (head_center_x - head_radius, head_center_y - head_radius),
-            (head_center_x + head_radius, head_center_y - head_radius),
-            (head_center_x + head_radius, head_center_y + head_radius),
-            (head_center_x - head_radius, head_center_y + head_radius),
-        ]
-        draw_polygon(bitmap, head_pts, man_color)
-        # Legs (simple lines)
-        # draw_line(bitmap, x_offset, y_offset, x_offset - 2, y_offset + 4, man_color)
-        # draw_line(bitmap, x_offset, y_offset, x_offset + 2, y_offset + 4, man_color)
-        # Arms (simple lines)
-        # draw_line(bitmap, x_offset, y_offset - 6, x_offset - 3, y_offset - 4, man_color)
-        # draw_line(bitmap, x_offset, y_offset - 6, x_offset + 3, y_offset - 4, man_color)
-        pass
-
-
 from lib.poly_tools import PolyTools
 import lib.utils
+import math # Added for Man class methods
+
+# Constants for Man drawing parts (indices for sct skeleton array)
+# Matches JS: TORSO=0, NECK=1, HEAD=2, PELVIS=3, HIP=4, KNEE=5, ANKLE=6, SHOULDER=7, ELBOW=8, WRIST=9
+TORSO, NECK, HEAD, PELVIS, HIP, KNEE, ANKLE, SHOULDER, ELBOW, WRIST = range(10)
+
+
+class Man:
+    def __init__(self, poly_tools_instance, utils_instance):
+        self.poly_tools = poly_tools_instance
+        self.utils = utils_instance
+
+    def _expand_local(self, local_polyline_pts, width_func):
+        """
+        Input: list of local (x,y) points forming a centerline.
+        width_func(t): function of progress (0-1) along polyline, returns width at that point.
+        Calculates vtxlist0_local, vtxlist1_local similar to how draw_stroke calculates its polygon boundaries.
+        Returns [vtxlist0_local, vtxlist1_local]
+        """
+        if not local_polyline_pts or len(local_polyline_pts) < 2:
+            return [[], []]
+
+        vtxlist0_local = []
+        vtxlist1_local = []
+
+        # Handle first point
+        p_curr = local_polyline_pts[0]
+        p_next = local_polyline_pts[1]
+        angle_first = math.atan2(p_next[1] - p_curr[1], p_next[0] - p_curr[0])
+        w = width_func(0)
+        vtxlist0_local.append((p_curr[0] + w * math.cos(angle_first + math.pi/2), p_curr[1] + w * math.sin(angle_first + math.pi/2)))
+        vtxlist1_local.append((p_curr[0] + w * math.cos(angle_first - math.pi/2), p_curr[1] + w * math.sin(angle_first - math.pi/2)))
+
+        if len(local_polyline_pts) <= 2: # Simplified for 2 points
+            p_curr = local_polyline_pts[-1] # Last point
+            # angle uses the same as first segment
+            w = width_func(1)
+            vtxlist0_local.append((p_curr[0] + w * math.cos(angle_first + math.pi/2), p_curr[1] + w * math.sin(angle_first + math.pi/2)))
+            vtxlist1_local.append((p_curr[0] + w * math.cos(angle_first - math.pi/2), p_curr[1] + w * math.sin(angle_first - math.pi/2)))
+            return [vtxlist0_local, vtxlist1_local]
+
+        for i in range(1, len(local_polyline_pts) - 1):
+            p_prev = local_polyline_pts[i-1]
+            p_curr = local_polyline_pts[i]
+            p_next = local_polyline_pts[i+1]
+
+            a1 = math.atan2(p_curr[1] - p_prev[1], p_curr[0] - p_prev[0])
+            a2 = math.atan2(p_next[1] - p_curr[1], p_next[0] - p_curr[0]) # Corrected: p_next - p_curr
+
+            angle_bisector = (a1 + a2) / 2
+            # Ensure the angle points "outward" from the turn
+            if abs(a1 - a2) > math.pi: # If angles wrap around PI
+                 angle_bisector += math.pi
+
+            # Acute angle check for miter joint extension
+            # If the angle between segments is very sharp, the miter can be long.
+            # No specific miter limit implemented here yet, but could be added.
+
+            w = width_func(i / (len(local_polyline_pts) -1))
+
+            # Normal to the bisector for the offset points
+            vtxlist0_local.append((p_curr[0] + w * math.cos(angle_bisector + math.pi/2),
+                                   p_curr[1] + w * math.sin(angle_bisector + math.pi/2)))
+            vtxlist1_local.append((p_curr[0] + w * math.cos(angle_bisector - math.pi/2),
+                                   p_curr[1] + w * math.sin(angle_bisector - math.pi/2)))
+
+        # Handle last point
+        p_curr = local_polyline_pts[-1]
+        p_prev = local_polyline_pts[-2]
+        angle_last = math.atan2(p_curr[1] - p_prev[1], p_curr[0] - p_prev[0])
+        w = width_func(1)
+        vtxlist0_local.append((p_curr[0] + w * math.cos(angle_last + math.pi/2), p_curr[1] + w * math.sin(angle_last + math.pi/2)))
+        vtxlist1_local.append((p_curr[0] + w * math.cos(angle_last - math.pi/2), p_curr[1] + w * math.sin(angle_last - math.pi/2)))
+
+        return [vtxlist0_local, vtxlist1_local]
+
+    def _transform_polyline_local(self, local_polyline_pts, p0_global, p1_global, is_flipped_locally=False):
+        """
+        Transforms local_polyline_pts (defined along a conceptual vertical baseline, origin at p0_local)
+        to fit the global baseline defined by p0_global and p1_global.
+        If is_flipped_locally is True, local x-coordinates are mirrored before transformation.
+        """
+        if not local_polyline_pts:
+            return []
+
+        transformed_global_pts = []
+
+        # Calculate global baseline properties
+        dx_global = p1_global[0] - p0_global[0]
+        dy_global = p1_global[1] - p0_global[1]
+        len_global_baseline = math.sqrt(dx_global**2 + dy_global**2)
+        angle_global_baseline = math.atan2(dy_global, dx_global)
+
+        # Determine local baseline length. Assume local points are scaled relative to some reference height.
+        # For a vertical local baseline, this would be the max y-value (or height of the local drawing space).
+        # If local_polyline_pts are, e.g. [(0,0), (0,10), (5,15)], then local_ref_len could be 15.
+        # For simplicity, let's assume the local polyline is normalized or its scale is handled by caller,
+        # and we scale based on the length of the global baseline relative to a local unit length (e.g. 1.0 if local points are normalized).
+        # Or, more robustly, assume the local points are defined in a space where their y-coordinates represent "length" along the local baseline.
+        # Let the last point's y-coordinate define the reference length of the local baseline if it's mostly vertical.
+        # This part is crucial and depends on how local_polyline_pts are defined.
+
+        # Let's assume local_polyline_pts are such that their extent defines the "length" to be mapped to len_global_baseline.
+        # If local_polyline_pts = [(0,0), (0,10)], local_len = 10. Scale factor = len_global_baseline / 10.
+        # For a generic polyline, this is harder. The JS version implies the local points define a shape
+        # whose "height" (max y extent if baseline is y-axis) should scale to len_global_baseline.
+
+        # Simplified assumption: local points are within a normalized box, and we scale by len_global_baseline.
+        # This might need adjustment if local points have their own inherent scale/length.
+        # For hat: local points are defined for a unit-height head. Scale by actual head height.
+
+        # Let's assume local_polyline_pts are defined in a coordinate system where (0,0) is the start
+        # and (0, local_ref_height) is the "end" of the local baseline.
+        # If local_polyline_pts are for a hat, local_ref_height could be 1.0 (normalized head height).
+        # The scale factor would then be len_global_baseline / 1.0.
+
+        # If local_polyline_pts are not normalized, we need a local reference length.
+        # For hat01, the JS defines points like [0,0], [0,-1], meaning local_ref_height is 1.
+        local_ref_len = 1.0 # Default assumption: local coords are normalized to a baseline of length 1.
+        # This needs to be correct for how draw_hat01/02 define their points.
+        # JS hat01 pts: [[0,0],[0,-1],[-0.3,-1],[-0.1,-1.2],[-0.15,-1.3],[0,-1.2],[0.15,-1.3],[0.1,-1.2],[0.3,-1],[0,-1]]
+        # Max y extent is ~1.3, min y is 0. So local_ref_len is effectively 1.3 for the full height.
+        # However, the baseline for transformation is head_base to head_top. So a local_ref_len of 1.0 (normalized) is fine.
+
+        scale_factor = len_global_baseline / local_ref_len if local_ref_len != 0 else 1.0
+
+        for pt_local in local_polyline_pts:
+            x_local, y_local = pt_local
+
+            if is_flipped_locally:
+                x_local = -x_local
+
+            # Scale
+            x_scaled = x_local * scale_factor
+            y_scaled = y_local * scale_factor # y_local is along the local "height" axis
+
+            # Rotate: In local space, y is "forward", x is "sideways".
+            # We are rotating the local (x_local, y_local) system to align with global_baseline_angle.
+            # A point (0,1) locally (straight up) should map to a point along angle_global_baseline.
+            # A point (1,0) locally (to the right) should map to a point angle_global_baseline + PI/2.
+            # Standard rotation:
+            # x' = x*cos(theta) - y*sin(theta)
+            # y' = x*sin(theta) + y*cos(theta)
+            # Here, local y is along the baseline, local x is perpendicular.
+            # So, x_scaled is perpendicular distance, y_scaled is distance along baseline.
+            # x_rotated = y_scaled * math.cos(angle_global_baseline) - x_scaled * math.sin(angle_global_baseline) # Incorrect interpretation
+            # y_rotated = y_scaled * math.sin(angle_global_baseline) + x_scaled * math.cos(angle_global_baseline)
+
+            # Correct interpretation: local x maps to perpendicular to global baseline, local y maps along it.
+            # Imagine local y-axis aligns with global baseline, local x-axis is perpendicular to it.
+            # Contribution from local y (along baseline):
+            x_from_y_local = y_scaled * math.cos(angle_global_baseline)
+            y_from_y_local = y_scaled * math.sin(angle_global_baseline)
+            # Contribution from local x (perpendicular to baseline):
+            x_from_x_local = x_scaled * math.cos(angle_global_baseline - math.pi/2) # or +pi/2 depending on convention
+            y_from_x_local = x_scaled * math.sin(angle_global_baseline - math.pi/2)
+
+            x_transformed = x_from_y_local + x_from_x_local
+            y_transformed = y_from_y_local + y_from_x_local
+
+            # Translate
+            x_final = x_transformed + p0_global[0]
+            y_final = y_transformed + p0_global[1]
+
+            transformed_global_pts.append((x_final, y_final))
+
+        return transformed_global_pts
+
+    def _draw_cloth_segment(self, bitmap, global_centerline_pts, width_func, color_request, palette_type, current_palette, stroke_color_request=None, stroke_args_override=None):
+        if not global_centerline_pts or len(global_centerline_pts) < 2:
+            return
+
+        # Smooth centerline if more than 2 points
+        # Assuming PolyTools.bezzmh exists and works like JS version
+        # bezzmh(ptlist, resolution) -> returns smoothed points
+        # For cloth, low resolution smoothing is fine.
+        centerline_to_expand = global_centerline_pts
+        if len(global_centerline_pts) > 2:
+            # Pass self.utils to poly_tools.bezzmh if it needs it, or ensure bezzmh is standalone
+            centerline_to_expand = self.poly_tools.bezzmh(global_centerline_pts, 2, self.utils) # Added utils
+
+        if not centerline_to_expand or len(centerline_to_expand) < 2: # bezzmh might fail or return too few points
+            # Fallback: draw simple line if expansion fails
+            # print(f"Warning: Cloth segment centerline too short after smoothing: {centerline_to_expand}")
+            # draw_line(bitmap, global_centerline_pts[0][0], global_centerline_pts[0][1],
+            #           global_centerline_pts[-1][0], global_centerline_pts[-1][1],
+            #           get_palette_color_index(color_request, palette_type, current_palette)) # Palette usage needed
+            return
+
+        # Directly adapt draw_stroke logic for expansion based on global_centerline_pts
+        vtxlist0_global = []
+        vtxlist1_global = []
+
+        # Handle first point of the (potentially smoothed) centerline
+        p_curr = centerline_to_expand[0]
+        p_next = centerline_to_expand[1]
+        angle = math.atan2(p_next[1] - p_curr[1], p_next[0] - p_curr[0])
+        w = width_func(0) # Width at the start
+        vtxlist0_global.append((p_curr[0] + w * math.cos(angle + math.pi/2), p_curr[1] + w * math.sin(angle + math.pi/2)))
+        vtxlist1_global.append((p_curr[0] + w * math.cos(angle - math.pi/2), p_curr[1] + w * math.sin(angle - math.pi/2)))
+
+        # Intermediate points
+        if len(centerline_to_expand) > 2:
+            for i in range(1, len(centerline_to_expand) - 1):
+                p_prev = centerline_to_expand[i-1]
+                p_curr = centerline_to_expand[i]
+                p_next = centerline_to_expand[i+1]
+                a1 = math.atan2(p_curr[1] - p_prev[1], p_curr[0] - p_prev[0])
+                a2 = math.atan2(p_next[1] - p_curr[1], p_next[0] - p_curr[0]) # Corrected
+
+                bisector_angle = (a1 + a2) / 2
+                # Ensure the angle points "outward" for the miter calculation
+                if abs(a1 - a2) > math.pi: bisector_angle += math.pi # Handles wrap-around
+
+                w = width_func(i / (len(centerline_to_expand) - 1))
+                vtxlist0_global.append((p_curr[0] + w * math.cos(bisector_angle + math.pi/2), p_curr[1] + w * math.sin(bisector_angle + math.pi/2)))
+                vtxlist1_global.append((p_curr[0] + w * math.cos(bisector_angle - math.pi/2), p_curr[1] + w * math.sin(bisector_angle - math.pi/2)))
+
+        # Handle last point
+        p_curr = centerline_to_expand[-1]
+        # If only 2 points in centerline_to_expand, p_prev is the first point. Otherwise, it's the second to last.
+        p_prev = centerline_to_expand[0] if len(centerline_to_expand) == 2 else centerline_to_expand[-2]
+        angle = math.atan2(p_curr[1] - p_prev[1], p_curr[0] - p_prev[0])
+        w = width_func(1) # Width at the end
+        vtxlist0_global.append((p_curr[0] + w * math.cos(angle + math.pi/2), p_curr[1] + w * math.sin(angle + math.pi/2)))
+        vtxlist1_global.append((p_curr[0] + w * math.cos(angle - math.pi/2), p_curr[1] + w * math.sin(angle - math.pi/2)))
+
+        if not vtxlist0_global or not vtxlist1_global:
+            return
+
+        polygon_pts = vtxlist0_global + vtxlist1_global[::-1]
+
+        # Use global draw_polygon, which needs palette resolution done by caller or inside draw_polygon
+        # For now, assume draw_polygon has been updated or will be to handle color_request, palette_type, current_palette
+        # actual_color_idx = get_palette_color_index(color_request, palette_type, current_palette)
+        # draw_polygon(bitmap, polygon_pts, actual_color_idx) # OLD
+
+        # New: Pass request and palette info to draw_polygon (assuming it's updated)
+        # This module's draw_polygon needs to be updated. For now, using the old signature with resolved color.
+        from .color_utils import get_palette_color_index # Assuming color_utils is in the same directory
+        actual_color_idx = get_palette_color_index(color_request, palette_type, current_palette)
+        draw_polygon(bitmap, polygon_pts, actual_color_idx)
+
+
+        if stroke_color_request is not None:
+            actual_stroke_color_idx = get_palette_color_index(stroke_color_request, palette_type, current_palette)
+
+            default_stroke_args = {
+                'col': actual_stroke_color_idx,
+                'wid': 1, 'noi': 0.1,
+                'fun': lambda x_prog: 1 # Constant width
+            }
+            if stroke_args_override:
+                default_stroke_args.update(stroke_args_override)
+
+            # Pass updated args to global draw_stroke
+            draw_stroke(bitmap, vtxlist0_global, default_stroke_args)
+            draw_stroke(bitmap, vtxlist1_global, default_stroke_args)
+
+
+    def draw_hat01(self, bitmap, head_base_pt_global, head_top_pt_global, args_hat, palette_type, current_palette):
+        is_flipped = args_hat.get('fli', False)
+        feather_color_req = args_hat.get('feather_col', "random") # Example: "random" or specific index
+        hat_body_color_req = args_hat.get('body_col', "dark")   # Example
+
+        # Local points for hat polygon and feather line. Y is negative upwards.
+        # Hat body polygon (closed shape)
+        hat_poly_local = [[0,0],[0,-1],[-0.3,-1],[-0.1,-1.2],[-0.15,-1.3],[0,-1.2],[0.15,-1.3],[0.1,-1.2],[0.3,-1],[0,-1]] # Closed back to [0,-1] for polygon
+        hat_poly_local = [[p[0]*0.8, p[1]*0.8] for p in hat_poly_local] # Scale down slightly
+
+        # Feather line (open shape)
+        feather_line_local = [[-0.1,-1.1],[-0.3,-1.3],[-0.2,-1.7],[-0.05,-1.5]]
+        feather_line_local = [[p[0]*0.8, p[1]*0.8] for p in feather_line_local]
+
+
+        # Transform local points to global
+        hat_poly_global = self._transform_polyline_local(hat_poly_local, head_base_pt_global, head_top_pt_global, is_flipped)
+        feather_line_global = self._transform_polyline_local(feather_line_local, head_base_pt_global, head_top_pt_global, is_flipped)
+
+        # Draw using global drawing functions (draw_polygon, draw_stroke)
+        # These need to handle color requests and palettes.
+        from .color_utils import get_palette_color_index
+
+        # Draw hat body (filled polygon)
+        hat_body_actual_color = get_palette_color_index(hat_body_color_req, palette_type, current_palette)
+        draw_polygon(bitmap, hat_poly_global, hat_body_actual_color) # Assumes draw_polygon takes resolved index
+
+        # Draw feather (stroke)
+        feather_actual_color = get_palette_color_index(feather_color_req, palette_type, current_palette)
+        stroke_args_feather = {
+            'col': feather_actual_color, # Resolved index
+            'wid': 2, 'noi': 0.2, 'fun': lambda x: math.sin(x * math.pi)
+        }
+        draw_stroke(bitmap, feather_line_global, stroke_args_feather) # Assumes draw_stroke takes resolved index in args
+
+    def draw_hat02(self, bitmap, head_base_pt_global, head_top_pt_global, args_hat, palette_type, current_palette):
+        is_flipped = args_hat.get('fli', False)
+        hat_color_req = args_hat.get('col', "dark")
+
+        # Local points for hat02 (conical hat)
+        hat_poly_local = [[0,0],[-0.5,-0.5],[0,-1.5],[0.5,-0.5],[0,0]] # Closed shape
+        hat_poly_local = [[p[0]*0.9, p[1]*0.9] for p in hat_poly_local]
+
+
+        hat_poly_global = self._transform_polyline_local(hat_poly_local, head_base_pt_global, head_top_pt_global, is_flipped)
+
+        from .color_utils import get_palette_color_index
+        hat_actual_color = get_palette_color_index(hat_color_req, palette_type, current_palette)
+        draw_polygon(bitmap, hat_poly_global, hat_actual_color)
+
+    def draw_stick01(self, bitmap, hand_pt_global, ground_pt_global, args_stick, palette_type, current_palette):
+        # is_flipped = args_stick.get('fli', False) # Stick usually not affected by character flip this way
+        stick_color_req = args_stick.get('col', "brown") # Example
+
+        # Stick is a simple line, potentially styled by draw_stroke
+        # The "local" points are just the start and end for the stroke.
+        # No transformation needed beyond what draw_stroke handles if given global points.
+
+        stick_centerline_global = [hand_pt_global, ground_pt_global]
+
+        from .color_utils import get_palette_color_index
+        stick_actual_color = get_palette_color_index(stick_color_req, palette_type, current_palette)
+
+        stroke_args_stick = {
+            'col': stick_actual_color,
+            'wid': args_stick.get('wid', 3),
+            'noi': 0.1,
+            'fun': lambda x: 1 # Constant width
+        }
+        draw_stroke(bitmap, stick_centerline_global, stroke_args_stick)
+
+    def draw_man(self, bitmap, x_offset, y_offset, args_man, palette_type, current_palette):
+        sca = args_man.get('sca', 1.0)
+        hat_func = args_man.get('hat', None) # e.g., self.draw_hat01
+        item_func = args_man.get('ite', None) # e.g., self.draw_stick01
+        is_flipped_globally = args_man.get('fli', False)
+        joint_angles_rel = args_man.get('ang', [0]*10) # Relative angles for joints
+        bone_lengths_scaled = [l * sca for l in args_man.get('len', [20,8,12,18,17,17,5,15,15,15])] # Default lengths scaled
+
+        # Colors from args_man or defaults
+        body_color_req = args_man.get('body_col', "blue")
+        head_color_req = args_man.get('head_col', "skin")
+        limbs_color_req = args_man.get('limbs_col', "blue")
+        stroke_color_req = args_man.get('stroke_col', "black") # For outlines of cloth segments
+
+        # Skeleton definition: [parent_joint_idx, initial_angle_offset_deg, length_idx_in_bone_lengths]
+        # Angles are relative to parent bone's angle.
+        sct = [ # TORSO is root-ish, PELVIS is also somewhat root depending on interpretation
+            [PELVIS,   90, TORSO],    # 0 TORSO: connected to PELVIS, points straight up initially, uses TORSO length
+            [TORSO,    90, NECK],     # 1 NECK: connected to TORSO, points up, uses NECK length
+            [NECK,     90, HEAD],     # 2 HEAD: connected to NECK, points up, uses HEAD length
+            [TORSO,   -90, PELVIS],   # 3 PELVIS: connected to TORSO, points down, uses PELVIS length (acts as root for legs)
+            [PELVIS,  -135, HIP],     # 4 HIP (L): connected to PELVIS, angled down-left, uses HIP length
+            [HIP,       0, KNEE],     # 5 KNEE (L): connected to HIP, initially straight, uses KNEE length
+            [KNEE,      0, ANKLE],    # 6 ANKLE (L): connected to KNEE, initially straight, uses ANKLE length (endpoint for stick)
+            [TORSO,   135, SHOULDER], # 7 SHOULDER (L): connected to TORSO, angled up-left, uses SHOULDER length
+            [SHOULDER,  0, ELBOW],    # 8 ELBOW (L): connected to SHOULDER, initially straight, uses ELBOW length (endpoint for stick)
+            [ELBOW,     0, WRIST]     # 9 WRIST (L): connected to ELBOW, initially straight, uses WRIST length
+        ]
+        # For right limbs, angles would be mirrored if not handled by is_flipped_globally + local joint angle adjustments
+
+        pts_global = [(0,0)] * 10 # Absolute positions of joints
+        ang_global = [0.0] * 10   # Absolute angles of bones
+
+        # Base position and flip
+        pts_global[PELVIS] = (x_offset, y_offset) # Pelvis as the root position
+
+        # Calculate global joint positions and bone angles
+        # Order of calculation matters: parents before children.
+        # Standard order: PELVIS (root), TORSO, NECK, HEAD, HIP, KNEE, ANKLE, SHOULDER, ELBOW, WRIST
+        # This can be done by iterating sct if it's sorted topologically, or by explicit calls.
+
+        # Simplified calculation order, assuming sct is roughly topological for this pass
+        # Need to handle flipping correctly. If is_flipped_globally, initial angles mirror around vertical.
+
+        joint_order_calc = [PELVIS, TORSO, NECK, HEAD, HIP, SHOULDER, KNEE, ELBOW, ANKLE, WRIST]
+
+        for i_joint in joint_order_calc:
+            parent_idx, angle_offset_deg, length_idx = sct[i_joint]
+
+            current_bone_len = bone_lengths_scaled[length_idx]
+            current_rel_ang_rad = math.radians(joint_angles_rel[i_joint])
+
+            # Initial angle offset from sct definition
+            initial_offset_rad = math.radians(angle_offset_deg)
+            if is_flipped_globally:
+                # Mirror angle around vertical axis (Y-axis). Angle A becomes PI - A.
+                # Or, if angles are defined symmetrically (e.g. 135 deg vs 45 deg for L/R limbs),
+                # flipping might mean choosing the "other" side's definition or adjusting current_rel_ang_rad.
+                # For now, let's assume initial_offset_rad is mirrored for lateral joints if global flip.
+                # A simple way: if joint is a side one (hip, shoulder), mirror its initial offset.
+                # This depends on how sct angles are defined (e.g., always for left side, then flipped).
+                # Let's assume sct is for "base" pose (e.g. left side), and flip mirrors it.
+                # If initial angle is from vertical (90 deg), mirrored is also 90.
+                # If initial angle is 135 (up-left), mirrored is 45 (up-right).
+                # initial_offset_rad = math.pi - initial_offset_rad # This flips angle relative to positive x-axis.
+
+                # Simpler: if global flip, negate the x-component of direction vector later, or adjust angle:
+                # For an angle 'a', (cos a, sin a) becomes (-cos a, sin a). This is angle PI - a.
+                # Or, negate relative joint angles for lateral movement.
+                # The JS code has 'fli' multiply x-coordinates in gpos, and adjust angles in grot.
+                pass # Flip handling will be part of angle calculation
+
+            if i_joint == PELVIS: # Root joint
+                # Pelvis's "parent" is TORSO in sct for length, but its position is the reference x_offset, y_offset.
+                # Its angle is relative to an assumed "world" frame. Let's assume it starts upright.
+                # Or, if TORSO is true root, then PELVIS hangs from it.
+                # JS seems to imply PELVIS is a primary point. Let gpos(TORSO) be origin.
+                # Let's re-evaluate root. JS gpos uses TORSO as (x,y). So TORSO is the reference point.
+                pts_global[TORSO] = (x_offset, y_offset)
+                ang_global[TORSO] = math.radians(-90) # Torso points upwards initially (angle from positive X-axis)
+                                                      # This is if joint_angles_rel[TORSO] is 0.
+                                                      # And sct[TORSO][1] (angle_offset_deg) is also 0 or reference.
+                # If sct[TORSO] = [TORSO, 0, L_TORSO], then ang_global[TORSO] = initial_angle_for_torso + rel_ang[TORSO]
+                # Let's assume Torso's initial angle is -PI/2 (upwards) + its relative angle.
+                # And its parent for angle reference is an implicit horizontal line.
+
+                # Recalculate based on TORSO as true root for position
+                if i_joint == TORSO: #This block should be outside loop or first
+                    ang_parent = math.radians(0) # Torso's parent is implicit horizontal world axis
+                    # angle_offset_deg for TORSO in sct is likely relative to this parent.
+                    # If sct[TORSO] = [TORSO, 0, TORSO_LEN_IDX], its angle is:
+                    parent_abs_angle = 0 # World horizontal
+                    initial_ang = math.radians(sct[TORSO][1]) # Should be 90 if TORSO points up from horizontal
+                    if is_flipped_globally: initial_ang = math.pi - initial_ang
+
+                    ang_global[TORSO] = parent_abs_angle + initial_ang + current_rel_ang_rad
+                    # pts_global[TORSO] is (x_offset, y_offset) - already set.
+                    continue # Skip to next in joint_order_calc
+
+            # For other joints:
+            parent_abs_angle = ang_global[parent_idx]
+            px, py = pts_global[parent_idx]
+
+            # Angle calculation: parent's_global_angle + initial_offset_for_this_joint + relative_angle_for_this_joint
+            current_initial_offset_rad = initial_offset_rad
+            if is_flipped_globally:
+                # If parent is TORSO or PELVIS (central parts), and this is a limb base (SHOULDER, HIP)
+                # then mirror the initial offset.
+                if parent_idx in [TORSO, PELVIS] and i_joint in [HIP, SHOULDER]:
+                     # e.g. if initial_offset_rad was for leftward limb, make it rightward.
+                     # If angle is from parent bone: 45 deg left becomes -45 deg right.
+                     # This needs consistent definition of sct angles.
+                     # JS approach: ang[SHOULDER] = (1-2*fli)*ang[SHOULDER]
+                     # This means relative angles for limbs are negated if flipped.
+                     # Let's apply this to current_rel_ang_rad for limbs.
+                     if i_joint in [HIP, KNEE, ANKLE, SHOULDER, ELBOW, WRIST]:
+                         current_rel_ang_rad = current_rel_ang_rad * (1 - 2*is_flipped_globally)
+                # A simpler global flip: if global flip, all angles calculated are PI - angle.
+                # This mirrors the whole structure horizontally if angles are from positive x-axis.
+                # Let's stick to negating relative angles for limbs and see.
+                pass
+
+
+            ang_global[i_joint] = parent_abs_angle + current_initial_offset_rad + current_rel_ang_rad
+
+            # If global flip, this final angle needs to be mirrored if not already handled by rel_ang flip
+            # final_calc_angle = ang_global[i_joint]
+            # if is_flipped_globally:
+            #      final_calc_angle = math.pi - final_calc_angle # This mirrors around Y axis
+            # pts_global[i_joint] = (px + current_bone_len * math.cos(final_calc_angle),
+            #                        py + current_bone_len * math.sin(final_calc_angle))
+
+            # Let's use the JS grot logic: relative angles are flipped for limbs.
+            # The final angle is calculated based on these potentially flipped relative angles.
+            # Then, if global flip is active, the x-component of the *displacement vector* is flipped.
+            # This is equivalent to angle PI - effective_angle for displacement, but keeps bone angle as calculated.
+
+            dx = current_bone_len * math.cos(ang_global[i_joint])
+            dy = current_bone_len * math.sin(ang_global[i_joint])
+
+            if is_flipped_globally:
+                dx = -dx # Flip the x-component of the vector from parent to child
+
+            pts_global[i_joint] = (px + dx, py + dy)
+
+
+        # Define width functions for body parts (lambda t: width where t is 0-1 progress)
+        # These are examples, need to match JS visual style.
+        # Widths are half-widths for the expansion function.
+        f_head_width = lambda t: bone_lengths_scaled[HEAD] * 0.6 * (1 + math.sin(t * math.pi) * 0.5) # Wider at base
+        f_torso_width = lambda t: bone_lengths_scaled[TORSO] * 0.3 * (1 + math.sin(t * math.pi)) # Torso wider in middle
+        f_limb_width = lambda t: bone_lengths_scaled[HIP] * 0.2 * (1 - t * 0.5) # Limbs taper slightly
+
+        # Draw body parts using _draw_cloth_segment
+        # Order matters for overlap. Draw torso first, then limbs, then head.
+
+        # Torso (as a segment from Pelvis to Neck connection point - approx by TORSO joint)
+        # Or, from Pelvis to a point defined by TORSO length along its angle.
+        # JS seems to draw torso using points [1,0,3,4] (NECK,TORSO,PELVIS,HIP) - this is complex.
+        # Let's simplify: Torso is PELVIS to TORSO (as defined by skeleton).
+        # For a fuller torso, it might be drawn as a path: PELVIS -> TORSO -> NECK_BASE (near SHOULDER connection)
+        # pts_global[TORSO] is the "chest" point. pts_global[PELVIS] is hip center.
+        # A path like [pts_global[PELVIS], pts_global[TORSO], pts_global[NECK]] ? No, NECK is above TORSO.
+        # JS: poly([gpos(1),gpos(0),gpos(3),gpos(4)]
+        # (NECK, TORSO-ROOT, PELVIS, HIP-L) - this defines one side of torso.
+        # (NECK, TORSO-ROOT, PELVIS, HIP-R) - for other side. This is complex.
+
+        # Simpler: draw main body segments.
+        # Body (spine segment: Pelvis to Torso, Torso to Neck)
+        self._draw_cloth_segment(bitmap, [pts_global[PELVIS], pts_global[TORSO]], f_torso_width, body_color_req, palette_type, current_palette, stroke_color_request=stroke_color_req)
+        self._draw_cloth_segment(bitmap, [pts_global[TORSO], pts_global[NECK]], lambda t: f_torso_width(1)*(0.8-t*0.2), body_color_req, palette_type, current_palette, stroke_color_request=stroke_color_req) # Neck part of torso
+
+        # Left Limbs
+        self._draw_cloth_segment(bitmap, [pts_global[PELVIS], pts_global[HIP], pts_global[KNEE]], f_limb_width, limbs_color_req, palette_type, current_palette, stroke_color_request=stroke_color_req)
+        self._draw_cloth_segment(bitmap, [pts_global[KNEE], pts_global[ANKLE]], f_limb_width, limbs_color_req, palette_type, current_palette, stroke_color_request=stroke_color_req)
+        self._draw_cloth_segment(bitmap, [pts_global[TORSO], pts_global[SHOULDER], pts_global[ELBOW]], f_limb_width, limbs_color_req, palette_type, current_palette, stroke_color_request=stroke_color_req)
+        self._draw_cloth_segment(bitmap, [pts_global[ELBOW], pts_global[WRIST]], f_limb_width, limbs_color_req, palette_type, current_palette, stroke_color_request=stroke_color_req)
+
+        # TODO: Right Limbs (need separate joint calculations if not covered by simple flip of rel_angles)
+        # For now, assuming the flip in joint angle calculation and dx flip handles L/R symmetry.
+        # If sct is only for left side, then right side needs explicit definition or transformation.
+        # The current angle flipping is a global mirror. True L/R limbs would need distinct angle sets or more complex flip logic.
+
+        # Head
+        # Head centerline from Neck joint to Head joint
+        self._draw_cloth_segment(bitmap, [pts_global[NECK], pts_global[HEAD]], f_head_width, head_color_req, palette_type, current_palette, stroke_color_request=stroke_color_req)
+        # TODO: Face shading for head part (e.g. draw a darker polygon on one side)
+
+        # Hat
+        if hat_func:
+            # Hat is placed relative to head_base (NECK) and head_top (HEAD)
+            hat_args_default = {'fli': is_flipped_globally, 'body_col': "dark_grey", 'feather_col': "light_grey"} # Example colors
+            args_man_hat = args_man.get('args_hat', {})
+            hat_args_default.update(args_man_hat)
+            hat_func(self, bitmap, pts_global[NECK], pts_global[HEAD], hat_args_default, palette_type, current_palette)
+
+        # Item
+        if item_func:
+            # Item from WRIST (hand) to ANKLE (ground/foot area) - as in JS example
+            # This implies stick is held in left hand and touches left foot area.
+            item_args_default = {'col': "brown", "wid": sca * 3}
+            args_man_item = args_man.get('args_item', {})
+            item_args_default.update(args_man_item)
+            item_func(self, bitmap, pts_global[WRIST], pts_global[ANKLE], item_args_default, palette_type, current_palette)
+
 
 class Tree:
-    def __init__(self, noise_instance, utils_module, poly_tools_instance):
+    def __init__(self, poly_tools_instance, noise_instance, utils_instance, man_instance): # Updated constructor
         self.noise_instance = noise_instance
-        self.utils = utils_module
+        self.utils_instance = utils_instance # Changed from utils_module
         self.poly_tools = poly_tools_instance
+        self.man_instance = man_instance # Added man_instance
 
     def _branch(self, args):
         """
@@ -2152,7 +2663,7 @@ class Tree:
             lambda x_prog: -math.sin(x_prog * math.pi)
         ])
 
-        subdivided_pts_local = self.utils.div(current_segment_pts_local, 10)
+        subdivided_pts_local = self.utils_instance.div(current_segment_pts_local, 10) # Use utils_instance
 
         trmlist_bent_local = []
         if not subdivided_pts_local:
@@ -2194,11 +2705,11 @@ class Tree:
                 if num_recursive_calls == 1: # If only one call, use wider range
                     current_range = (-1,1)
 
-                angle_factor = self.utils.norm_rand(current_range[0], current_range[1])
+                angle_factor = self.utils_instance.norm_rand(current_range[0], current_range[1]) # Use utils_instance
 
                 detail_args_recurse = {
                     'ang': ang + ben + math.pi * angle_factor * 0.2,
-                    'len': length * self.utils.norm_rand(0.8, 0.9),
+                    'len': length * self.utils_instance.norm_rand(0.8, 0.9), # Use utils_instance
                     'ben': nben,
                     'col': color_index
                 }
@@ -2213,7 +2724,7 @@ class Tree:
         base_col_idx = args.get('col', 1)
         color_white_index = args.get('white_col_idx', 0)
 
-        ang_trunk_offset = self.utils.norm_rand(-1, 1) * math.pi * 0.2
+        ang_trunk_offset = self.utils_instance.norm_rand(-1, 1) * math.pi * 0.2 # Use utils_instance
         detail_segments_trunk = max(2, int(hei / 20))
 
         main_trunk_args = {
